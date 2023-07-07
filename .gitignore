@@ -1,0 +1,8 @@
+node_modules
+second.html
+teste.js
+.env
+build
+dist
+dist-electron
+.vscode

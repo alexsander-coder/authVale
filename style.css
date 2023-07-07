@@ -1,0 +1,19 @@
+/* ::-webkit-scrollbar {
+  width: 0px;
+} */
+
+body {
+  overflow-x: hidden;
+  /* font-family: Maven Pro, sans-serif; */
+
+}
+
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+
+}
