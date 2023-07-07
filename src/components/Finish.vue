@@ -220,22 +220,21 @@ fade-enter-active,
             </b-row>
           </b-form>
         </div>
-        <div class="d-flex justify-content-center">
-          <b-card v-if="showQrCodeModal" align="center" header="QR CODE VENDA CONTROLLER" header-text-variant="white"
-            header-tag="header" header-bg-variant="dark" style=" position: absolute; margin-top: -25%; max-width: 33%;">
-            <div style="margin: 5%;">
-              <b-card-text>
-                <qrcode-vue :value="qrcodeValueController" :render-as="'canvas'" level="L" :options="qrcodeOptions" />
-              </b-card-text>
-            </div>
-            <div style="margin-top: 15%;">
-              <b-button size="sm" style="margin-right: 10%;" @click="showQrCodeModal = false" variant="primary">REVISAR
-              </b-button>
-              <b-button size="sm" @click="showQrCodeModalCancel()" variant="danger">CANCELAR
-              </b-button>
-            </div>
-          </b-card>
-        </div>
+        <b-card v-if="showQrCodeModal" align="center" header="QR CODE VENDA CONTROLLER" header-text-variant="white"
+          header-tag="header" header-bg-variant="dark" style=" position: absolute; margin-top: -25%; max-width: 33%;">
+          <div style="margin: 5%;">
+            <b-card-text>
+              <qrcode-vue :value="qrcodeValueController" :render-as="'canvas'" level="L" :options="qrcodeOptions" />
+            </b-card-text>
+          </div>
+          <div style="margin-top: 15%;">
+            <b-button size="sm" style="margin-right: 10%;" @click="showQrCodeModal = false" variant="primary">REVISAR
+            </b-button>
+            <b-button size="sm" @click="showQrCodeModalCancel()" variant="danger">CANCELAR
+            </b-button>
+          </div>
+        </b-card>
+
       </b-tab>
     </b-tabs>
   </div><br><br>
