@@ -1,12 +1,10 @@
 {
   "name": "autorizador_valeshop",
   "productName": "Autorizador Vale Shop",
-  "internalName": "Autorizador Desktop",
-  "fileDescription": "Autorizador de vendas vale shop",
-  "app-version": "0.5.1",
-  "version": "0.5.1",
+  "app-version": "0.0.1",
+  "version": "0.0.1",
   "main": "dist-electron/main/index.js",
-  "description": "autorizador de vendas",
+  "description": "Aplicativo de Vendas ValeShop",
   "author": "alex",
   "license": "MIT",
   "private": true,
@@ -49,20 +47,16 @@
     "vue-tsc": "^1.2.0"
   },
   "dependencies": {
-    "@titou10/v-money": "^1.0.4",
     "bootstrap": "^5.3.0",
-    "bootstrap-icons-vue": "^1.10.3",
-    "bootstrap-vue": "^2.23.1",
     "bootstrap-vue-next": "^0.9.4",
     "depcheck": "^1.4.3",
-    "echarts": "^5.4.2",
     "electron-updater": "^6.1.1",
     "maska": "^2.1.9",
+    "openai": "^3.3.0",
     "qrcode.vue": "^3.4.0",
     "ts-dotenv": "^0.9.1",
     "v-money3": "^3.24.0",
     "vue": "^3.3.4",
-    "vue-echarts": "^6.6.0",
     "vue3-easy-data-table": "^1.5.47",
     "vuetify": "^3.3.2"
   }

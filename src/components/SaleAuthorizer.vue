@@ -3,6 +3,7 @@
 
 .error-message {
   background-color: #dc3545;
+
   margin-top: 0;
   color: white;
   font-size: large;
@@ -44,7 +45,6 @@
 }
 
 .formatInputMoney1 {
-
   color: #1c1c1c;
   border: 1px solid #e5e5e5;
   border-radius: 5px;
@@ -56,8 +56,9 @@
 .ajusteAv {
   color: rgb(56, 56, 56);
   font-weight: 600;
-  text-align: center;
-  margin-left: -10%;
+  /* text-align: center; */
+  margin-left: -13.5%;
+  /* margin-top: -65%; */
 }
 
 .customize-table {
@@ -85,10 +86,10 @@
 </style>
 <template>
   <div style="transform: scale(0.9); font-family: 'Nunito Sans', sans-serif;">
-    <b-card style=" margin-top: -9%; background-color: #f7f7f7;;">
+    <b-card style=" margin-top: -9%; background-color: #f7f7f7;">
       <b-tabs card align="center">
         <b-tab title="AVULSA" style="height: 1100px;">
-          <b-form @submit="fei">
+          <b-form @submit="submitAvulso">
             <b-row align-h="center">
               <b-col cols="3" style="margin-top: 7%;">
                 <b-form-group class="formatTxtLabel1" id="input-group-1" label="CPF:" label-for="input-1">
@@ -104,12 +105,34 @@
                 </b-form-group>
               </b-col>
             </b-row>
+            <div class="d-flex justify-content-center">
+              <transition name="fade">
+                <div v-if="errorMessage" class="error-message">
+                  {{ errorMessage }}
+                </div>
+              </transition>
+            </div>
             <b-row align-h="end">
               <b-col cols="3" style="margin-top: 10%;">
-                <b-button type="submit" variant="primary">Adicionar</b-button>
+                <b-button type="submit" variant="success">Processar venda</b-button>
               </b-col>
             </b-row>
           </b-form><br><br>
+          <b-card v-if="showQrCodeModal1" align="center" header="QR CODE VENDA AVULSA" header-text-variant="white"
+            header-tag="header" header-bg-variant="dark"
+            style="cursor: move; position: absolute; margin: -16% 0 0 30%; max-width: 33%; z-index: 1;">
+            <p>CPF: {{ this.form.cpfAvulso }}<br>
+              VALOR: {{ formatCurrency(this.form.valorAvulso) }}</p>
+
+            <qrcode-vue :value="value" :size="size" level="H" />
+
+            <div style="margin-top: 15%;">
+              <b-button size="sm" style="margin-right: 10%;" @click="showQrCodeModal1 = false" variant="primary">REVISAR
+              </b-button>
+              <b-button size="sm" @click="showCancelAvulso()" variant="danger">CANCELAR
+              </b-button>
+            </div>
+          </b-card>
         </b-tab>
 
         <b-tab title="CONTROLLER">
@@ -175,9 +198,9 @@
               </transition>
             </div>
             <br><br><br>
-            <EasyDataTable style="transform: scale(1.03);" show-index v-model:items-selected="itemsSelected"
-              :headers="headers" border-cell theme-color="#1d90ff" table-class-name="customize-table"
-              :items="formattedItems">
+            <EasyDataTable style="transform: scale(1.03);" labelRowsPerPageChange="'testando'" :rows-per-page="details"
+              v-model:items-selected="itemsSelected" :headers="headers" border-cell theme-color="#1d90ff"
+              :empty-message="eoem" table-class-name="customize-table" :items="formattedItems">
               <template #item-operation="item">
                 <div class="operation-wrapper">
                   <img src="../img/download.png" class="operation-icon" @click="deleteItem(item)" />
@@ -196,27 +219,33 @@
           <b-card v-if="showQrCodeModal" align="center" header="QR CODE VENDA CONTROLLER" header-text-variant="white"
             header-tag="header" header-bg-variant="dark"
             style=" position: absolute; margin: -75% 0 0 30%; max-width: 33%; z-index: 1;">
-            {{ itemsSelected }}
+            <qrcode-vue foreground="##0d6efd" background="#ffffff" :value="value" :size="size" level="H"
+              render-as="svg" />
             <div style="margin-top: 15%;">
               <b-button size="sm" style="margin-right: 10%;" @click="showQrCodeModal = false" variant="primary">REVISAR
               </b-button>
-              <b-button size="sm" @click="" variant="danger">CANCELAR
+              <b-button size="sm" @click="showQrCodeModalCancel()" variant="danger">CANCELAR
               </b-button>
             </div>
           </b-card>
-          <!-- itemsSelected: <br><br>
-          {{ itemsSelected }} <br> -->
+          teste bloq acesso
+          <a href="https://www.google.com.br">aqui</a><br><br>
+          {{ itemsSelected }} <br>
         </b-tab>
       </b-tabs>
     </b-card>
   </div>
+  <footer style="text-align: center;"> <small>&copy; {{ this.getNow() }} Vale Shop, Inc. All rights reserved.</small>
+  </footer>
 </template>
+
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { Header, Item } from "vue3-easy-data-table";
+import { Header } from "vue3-easy-data-table";
 import { Money3Component } from "v-money3";
 import { vMaska } from "maska"
+import QrcodeVue from "qrcode.vue";
 
 export default defineComponent({
   directives: {
@@ -224,12 +253,11 @@ export default defineComponent({
   },
   components: {
     money3: Money3Component,
-    //#f7f7f7;
+    QrcodeVue,
   },
 
 
   data() {
-
     const headers: Header[] = [
       { text: "CPF", value: "cpfController", width: 160 },
       { text: "PRODUTO", value: "produto", width: 220 },
@@ -238,28 +266,29 @@ export default defineComponent({
       { text: "Operação", value: "operation" },
     ];
 
-
-    // const items: Item[] = [];
-    const items: {
+    const items: Array<{
       id: number,
       cpfController: number,
       selectProduto: string,
       quantityController: number,
       valorController: any
-    }[] = [];
+    }> = [];
 
-    // const itemsSelected: Item[] = [];
-    const itemsSelected: {
+    const itemsSelected: Array<{
       id: number,
       cpfController: number,
       selectProduto: string,
       quantityController: number,
       valorController: any
-    }[] = [];
-
+    }> = [];
 
     return {
+      details: 10,
+      eoem: 'Nenhum dado a ser exibido',
+      value: 'ID da transação',
+      size: 100,
       errorMessage: null,
+      showQrCodeModal1: false,
       showQrCodeModal: false,
 
       form: {
@@ -273,12 +302,12 @@ export default defineComponent({
         quantidade: '',
         valorController: ''
       },
+
       foods: [{ text: 'Select One Product', value: null }, 'Combustivel', 'Extintor', 'Pneu', 'Calibragem'],
       show: true,
       headers,
       items,
-      itemsSelected,
-      // deleteItem,
+      itemsSelected
     }
   },
 
@@ -303,57 +332,70 @@ export default defineComponent({
       }));
     },
 
-    totalValorController() {
+    totalValorController(): number {
+      const total = this.itemsSelected.reduce((acc: any, item: any) => {
+        const valorNumerico = parseFloat(item.valorController.replace(/[^\d.,-]/g, '').replace(',', '.'));
+        return acc + (valorNumerico * item.quantidade);
+      }, 0);
 
-      let total = this.itemsSelected.reduce(getTotal, 0);
-
-      function getTotal(total: any, item: any) {
-
-        let valorString = item.valorController;
-        const removeCaracter = valorString.replace(/R\$\s*/, '')
-        console.log(valorString, 'valor nao formatado')
-
-        const valorNumerico = parseFloat(removeCaracter.replace(/\D/g, '')) / 100;
-
-        console.log(valorNumerico, 'valor formated')
-
-        return total + (valorNumerico * +item.quantidade);
-      }
-
-      let totalFormated = parseFloat(total.toFixed(2))
+      const totalFormated = parseFloat(total.toFixed(2));
 
       return totalFormated;
     }
+
   },
 
-  // mounted() {
-  //   this.ops();
-  // },
-
   methods: {
+    enviarDados() {
+      const url = 'http://localhost:3009/received';
+      const dados = this.itemsSelected;
+      console.log(dados, 'como vem o dados')
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dados)
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data, 'fih do cabrunco o que vem aqui')
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+
+
+    showCancelAvulso() {
+      this.form.cpfAvulso = ''
+      this.form.valorAvulso = ''
+      this.showQrCodeModal1 = false
+    },
+
+    showQrCodeModalCancel() {
+      this.items = this.items.filter((itens: any) => { itens });
+      this.itemsSelected = []
+      this.showQrCodeModal = false
+    },
+
+    getNow() {
+      const today = new Date().getFullYear();
+      return today;
+    },
 
     deleteItem(val: any) {
       this.items = this.items.filter((item: any) => item.id !== val.id);
       this.itemsSelected = this.itemsSelected.filter((obj: any) => obj.id !== val.id);
     },
 
-    // async ops() {
-    //   try {
-    //     const response = await fetch('http://localhost:3000/produtos');
-    //     const data = await response.json();
+    submitAvulso() {
+      if (this.form.valorAvulso === "0.00" || this.form.cpfAvulso === '') {
+        return this.validFormAvulso()
+      }
+      this.saleAvulsa = this.form
+      this.showQrCodeModal1 = true
 
-    //     // Mapeia os dados para o formato esperado pelo :options
-    //     this.foods = data.map((product: { title: any; id: any }) => ({
-    //       text: product.title,
-    //       value: product.id,
-    //     }));
-    //   } catch (error) {
-    //     console.error('Error fetching products:', error);
-    //   }
-    // },
-
-    fei(event: any) {
-      console.log(this.form)
     },
 
     addToCart(event: any) {
@@ -404,12 +446,11 @@ export default defineComponent({
     },
 
 
-
     controllerSaleProcess(event: any) {
       event.preventDefault()
 
       if (this.validaProcessarVenda()) {
-
+        this.enviarDados()
         console.log(this.totalValorController)
         console.log('Valor final:', this.totalValorController)
         this.showQrCodeModal = true
@@ -430,16 +471,17 @@ export default defineComponent({
 
     showErrorMessage(message: string, timeout = 6000) {
       this.errorMessage = message;
-
       setTimeout(() => {
         this.errorMessage = null;
       }, timeout)
     },
 
     validValue() {
-      if (this.formC.valorController === "0.00") {
-        this.showErrorMessage('Todos os campos precisam ser preenchidos.')
-      }
+      this.showErrorMessage('Todos os campos precisam ser preenchidos.')
+    },
+
+    validFormAvulso() {
+      this.showErrorMessage('Todos os campos precisam ser preenchidos.')
     },
 
     validaForm(formulario: any) {
@@ -462,7 +504,7 @@ export default defineComponent({
 
     validaProcessarVenda() {
       if (this.itemsSelected.length === 0) {
-        this.showErrorMessage('Selecione ao menos um item para prosseguir com a venda!.');
+        this.showErrorMessage('Selecione ao menos um item para prosseguir com a venda.');
         return false;
       }
       return true;
